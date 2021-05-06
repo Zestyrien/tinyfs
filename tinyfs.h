@@ -2,7 +2,7 @@
 // /___  ___/ / / / _ \    / / \ \  / /     /  ____/ / _____/                 //
 //    / /    / / / / \ \  / /   \ \/ /     /  /__   / /____                   //
 //   / /    / / / /   \ \/ /    /   /     / ____/  /____  /                   //
-//  / /    / / / /     \  /    /   /     / /      /      /  Tiny File system  //
+//  / /    / / / /     \  /    /   /     / /      /      /  Tiny File System  //
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // Overview                                                                   //
@@ -15,7 +15,7 @@
 //  i - inodes bitmap                                                         //
 //  d - data bitmap                                                           //
 //                                                                            //
-//  Consider the disk divided in blocks of sieze 4k.                          //
+//  Consider the disk divided in blocks of size 4k.                           //
 //  First block has file system info.                                         //
 //  i and d are bitmaps to track rispectively inodes and data blocks          //
 //  allocation. The remaining blocks contain user data.                       //
