@@ -154,7 +154,6 @@ INode *tfs_allocate_inode(int *error) {
   }
 
   // Get the index in the bitmap for the block
-  char *dataBitmap = readBlock(DATA_BITMAP_BLOCK);
   int dataIndex = getFirstZeroBit(blocks->data_bitmap, BLOCK_SIZE);
   if (dataIndex == -1 || dataIndex > (BLOCK_SIZE * 8)) {
     // TO DO error = OUT_OF_DATA_BLOCKS;
