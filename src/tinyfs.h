@@ -13,22 +13,19 @@
 //                                                                            //
 //  S - superblock file system info                                           //
 //  i - inodes bitmap                                                         //
-//  h - hash table                                                            //
 //  d - data bitmap                                                           //
 //                                                                            //
 //  Consider the disk divided in blocks of size 4k.                           //
 //  First block has file system info.                                         //
 //  i and d are bitmaps to track rispectively inodes and data blocks          //
 //  allocation.                                                               //
+//  The inodes blocks store the actual inodes                                 //
 //  hash are block that contains the hash table for file lookup.              //
 //  The remaining blocks contain user data.                                   //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#include <memory>
-#include <optional>
 
 namespace tfs {
 
@@ -59,6 +56,7 @@ public:
                                        bool recursive);
   Maybe<uint64_t, tfs::Error> OpenFile(std::wstring_view fullName);
   Maybe<uint64_t, tfs::Error> GetFileSize(uint32_t const &inodeId);
+  std::unique_ptr<IDiskIO> GetDiskIO();
 
 private:
   std::unique_ptr<IDiskIO> m_diskIO;

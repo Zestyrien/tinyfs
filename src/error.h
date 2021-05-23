@@ -3,7 +3,12 @@
 
 namespace tfs {
 
-enum class Error { NotEnoughSpace };
+enum class Error {
+  NotEnoughSpace,
+  DiskInterfaceNotProvided,
+  OutOfRange,
+  PartitionTooSmall
+};
 
 std::wstring_view GetErrorInfo(Error const &error);
 
