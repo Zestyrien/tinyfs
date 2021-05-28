@@ -1,12 +1,26 @@
-#include <gtest/gtest.h>
-
 #include "diskMock.h"
 #include "tinyfs.h"
+#include <gtest/gtest.h>
+#include <string.h>
+
+bool Compare(std::array<char, BLOCK_SIZE> const &one,
+             std::array<char, BLOCK_SIZE> const &two) {
+
+  return memcmp(one.data(), two.data(), BLOCK_SIZE) == 0;
+}
+
+TEST(TinyFS, WhenFormatDiskFormatsLessThan15Blocks) {
+  auto disk = std::make_unique<DiskMock>(14);
+  TinyFS tiny(std::move(disk));
+  auto const error = tiny.FormatDisk(14);
+  EXPECT_TRUE(error.has_value());
+  EXPECT_EQ(error, tfs::Error::PartitionTooSmall);
+}
 
 TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
   auto disk = std::make_unique<DiskMock>(15);
   TinyFS tiny(std::move(disk));
-  tiny.FormatDisk(15);
+  EXPECT_FALSE(tiny.FormatDisk(15));
 
   // For now the super block is 0
   // The i block will have only 1 inode for the root folder
@@ -20,16 +34,37 @@ TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
   std::array<char, BLOCK_SIZE> dst;
 
   EXPECT_FALSE(result->ReadBlock(SUPER_BLOCK, dst));
+  EXPECT_TRUE(Compare(block, dst))
+  << "SUPER block not zero after format.";
 
-  bool error = false;
-  for (auto const &i : dst) {
-    if (i != 0) {
-      error = true;
-      break;
-    }
-  }
+  // Root is always in 0, no need to hash it
+  EXPECT_FALSE(result->ReadBlock(HASH_BLOCK, dst));
+  EXPECT_TRUE(Compare(block, dst));
 
-  EXPECT_FALSE(error) << "SUPER block not zero after format.";
+  // Set first bit to one to compare with the bitmaps
+  block[0] = 0b10000000;
 
   EXPECT_FALSE(result->ReadBlock(INODE_BITMAP_BLOCK, dst));
+  EXPECT_TRUE(Compare(block, dst));
+
+  EXPECT_FALSE(result->ReadBlock(DATA_BITMAP_BLOCK, dst));
+  EXPECT_TRUE(Compare(block, dst));
+
+  auto inode = reinterpret_cast<tfs::INode *>(&block);
+  inode->id = 0;
+  inode->parentId = 0;
+  inode->fileBlock = 0;
+  inode->flags = tfs::INodeFlag::Directory;
+
+  // Directory name             /\0
+  // Parent dir name            \0
+  // Double null                \0\0
+  // Size is 5
+  inode->fileSize = 5;
+
+  EXPECT_FALSE(result->ReadBlock(INODES_BLOCK, dst));
+  EXPECT_TRUE(Compare(block, dst));
+
+  EXPECT_FALSE(result->ReadBlock(DATA_BLOCKS, dst));
+  EXPECT_TRUE(memcmp("/\0\0\0\0", dst.data(), 5) == 0);
 }

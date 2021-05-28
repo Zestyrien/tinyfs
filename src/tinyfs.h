@@ -60,4 +60,8 @@ public:
 
 private:
   std::unique_ptr<IDiskIO> m_diskIO;
+
+  size_t InitDirectoryBlock(std::array<char, BLOCK_SIZE> &block,
+                          std::string_view directoryName,
+                          std::string_view parentDirectoryName);
 };
