@@ -7,9 +7,8 @@ private:
   bool m_hasError;
 
 public:
-  explicit Maybe(T result) : m_hasError(false), m_result{result} {}
-
-  Maybe(E error) : m_hasError(true), m_error{error} {}
+  Maybe(T const &result) : m_hasError(false), m_result{result} {}
+  Maybe(E const &error) : m_hasError(true), m_error{error} {}
 
   bool error() const { return m_hasError; }
   T getResult() const { return m_result; }

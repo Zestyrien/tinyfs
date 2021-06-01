@@ -24,6 +24,11 @@ TEST(tfsError, GetErrorInfo_WhenThePartitionIsTooSmall) {
       GetErrorInfo(tfs::Error::PartitionTooSmall));
 }
 
+TEST(tfsError, GetErrorInfo_WhenTheDirectoryIsInvalid) {
+  EXPECT_EQ(L"Error attempt to read an invalid directory.",
+            GetErrorInfo(tfs::Error::InvalidDirectory));
+}
+
 TEST(tfsError, GetErrorInfo_WhenTheErrorIsUnknown) {
   EXPECT_EQ(L"Unknown error", GetErrorInfo(static_cast<tfs::Error>(-1)));
 }

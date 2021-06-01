@@ -7,7 +7,8 @@ enum class Error {
   NotEnoughSpace,
   DiskInterfaceNotProvided,
   OutOfRange,
-  PartitionTooSmall
+  PartitionTooSmall,
+  InvalidDirectory
 };
 
 std::wstring_view GetErrorInfo(Error const &error);

@@ -27,6 +27,11 @@
 
 #pragma once
 
+#include "maybe.h"
+#include "define.h"
+
+class IDiskIO;
+
 namespace tfs {
 
 enum class INodeFlag {

@@ -17,6 +17,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/tests)
 add_executable(
   testTinyFS
   src/error.cpp
+  src/directory.cpp
   src/tinyfs.cpp
   src/tests/diskMock.cpp
   src/tests/mainTests.cpp

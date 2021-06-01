@@ -1,11 +1,6 @@
-#include <string_view>
-
-#include <memory>
-#include <optional>
-
-#include "iDiskIO.h"
-#include "maybe.h"
+#include "error.h"
 #include "tinyfs.h"
+#include "iDiskIO.h"
 
 TinyFS::TinyFS(std::unique_ptr<IDiskIO> diskIO) {
   m_diskIO = std::move(diskIO);
@@ -84,6 +79,11 @@ size_t TinyFS::InitDirectoryBlock(std::array<char, BLOCK_SIZE> &block,
   block[count] = '\0';
   count++;
 
+  block[count] = 0;
+  block[count + 1] = 0;
+  block[count + 2] = 0;
+  block[count + 3] = 0;
+  count += 4;
   // Double null to signal directory termination
   block[count] = '\0';
   count++;

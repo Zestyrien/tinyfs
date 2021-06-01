@@ -1,4 +1,5 @@
 #include "diskMock.h"
+#include "expectedBuffers.h"
 #include "tinyfs.h"
 #include <gtest/gtest.h>
 #include <string.h>
@@ -34,8 +35,7 @@ TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
   std::array<char, BLOCK_SIZE> dst;
 
   EXPECT_FALSE(result->ReadBlock(SUPER_BLOCK, dst));
-  EXPECT_TRUE(Compare(block, dst))
-  << "SUPER block not zero after format.";
+  EXPECT_TRUE(Compare(block, dst)) << "SUPER block not zero after format.";
 
   // Root is always in 0, no need to hash it
   EXPECT_FALSE(result->ReadBlock(HASH_BLOCK, dst));
@@ -55,16 +55,11 @@ TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
   inode->parentId = 0;
   inode->fileBlock = 0;
   inode->flags = tfs::INodeFlag::Directory;
-
-  // Directory name             /\0
-  // Parent dir name            \0
-  // Double null                \0\0
-  // Size is 5
-  inode->fileSize = 5;
+  inode->fileSize = EMPTY_ROOT.size();
 
   EXPECT_FALSE(result->ReadBlock(INODES_BLOCK, dst));
   EXPECT_TRUE(Compare(block, dst));
 
   EXPECT_FALSE(result->ReadBlock(DATA_BLOCKS, dst));
-  EXPECT_TRUE(memcmp("/\0\0\0\0", dst.data(), 5) == 0);
+  EXPECT_TRUE(memcmp(EMPTY_ROOT.data(), dst.data(), EMPTY_ROOT.size()) == 0);
 }

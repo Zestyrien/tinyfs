@@ -1,9 +1,8 @@
 #include <gtest/gtest.h>
 
-#define UNIT_TEST true
-
 #include "errorTests.cpp"
 #include "maybeTests.cpp"
+#include "directoryTests.cpp"
 #include "tinyfsTests.cpp"
 
 int main(int argc, char **argv) {
