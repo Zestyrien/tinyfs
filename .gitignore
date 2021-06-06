@@ -1,3 +1,4 @@
 /build
 .ccls
 tags
+.dir-locals.el
