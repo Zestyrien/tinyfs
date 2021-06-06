@@ -1,4 +1,3 @@
-#include "error.h"
 #include "tinyfs.h"
 #include "iDiskIO.h"
 
@@ -57,7 +56,7 @@ Maybe<uint64_t, tfs::Error> TinyFS::OpenFile(std::wstring_view fullName) {
   return Maybe<uint64_t, tfs::Error>(10);
 }
 
-Maybe<uint64_t, tfs::Error> TinyFS::GetFileSize(uint32_t const &inodeId) {
+Maybe<uint64_t, tfs::Error> TinyFS::GetFileSize(uint32_t const inodeId) {
   return Maybe<uint64_t, tfs::Error>(10);
 }
 

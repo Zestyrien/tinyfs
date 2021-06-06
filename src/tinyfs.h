@@ -27,8 +27,9 @@
 
 #pragma once
 
-#include "maybe.h"
 #include "define.h"
+#include "error.h"
+#include "maybe.h"
 
 class IDiskIO;
 
@@ -60,13 +61,13 @@ public:
   std::optional<tfs::Error> RemoveFile(std::wstring_view fullName,
                                        bool recursive);
   Maybe<uint64_t, tfs::Error> OpenFile(std::wstring_view fullName);
-  Maybe<uint64_t, tfs::Error> GetFileSize(uint32_t const &inodeId);
+  Maybe<uint64_t, tfs::Error> GetFileSize(uint32_t const inodeId);
   std::unique_ptr<IDiskIO> GetDiskIO();
 
 private:
   std::unique_ptr<IDiskIO> m_diskIO;
 
   size_t InitDirectoryBlock(std::array<char, BLOCK_SIZE> &block,
-                          std::string_view directoryName,
-                          std::string_view parentDirectoryName);
+                            std::string_view directoryName,
+                            std::string_view parentDirectoryName);
 };

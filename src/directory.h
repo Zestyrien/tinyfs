@@ -11,7 +11,7 @@ struct DirectoryElement {
   uint32_t nodeId = 0;
 
   DirectoryElement() {}
-  DirectoryElement(char *n, uint32_t const &id);
+  DirectoryElement(std::string_view n, uint32_t const id);
 };
 
 Maybe<DirectoryElement, tfs::Error>
@@ -22,15 +22,18 @@ public:
   Directory();
   Directory(std::unique_ptr<char[]> pBlock);
 
-  Maybe<std::string_view, tfs::Error> GetDirectory();
+  Maybe<std::string_view, tfs::Error> GetDirectory() const;
 
-  Maybe<DirectoryElement, tfs::Error> GetParentDirectory();
+  Maybe<DirectoryElement, tfs::Error> GetParentDirectory() const;
 
-  Maybe<std::vector<DirectoryElement>, tfs::Error> GetFileList();
+  Maybe<std::vector<DirectoryElement>, tfs::Error> GetFileList() const;
 
   std::unique_ptr<char[]> GetBuffer();
 
 private:
+  std::optional<size_t> GetFirstFile() const;
+  std::optional<size_t> GetNextFile(size_t previousFile) const;
+
   std::unique_ptr<char[]> m_pBlock;
 };
 
