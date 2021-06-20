@@ -5,7 +5,7 @@ auto const diskInterfaceNotProvided =
     L"Internal error: disk interface not provided.";
 auto const outOfRange = L"Operation failed: out of range.";
 auto const partitionTooSmall = L"Operation failed: the partition is too small, "
-                               L"minium size for the partition is 15 blocks.";
+                               L"minimum size for the partition is 15 blocks.";
 auto const invalidDirectory = L"Error attempt to read an invalid directory.";
 auto const elementAlreadyExists =
     L"Error the file or directory already present.";
