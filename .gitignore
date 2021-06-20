@@ -2,3 +2,5 @@
 .ccls
 tags
 .dir-locals.el
+/cmake*
+/.idea

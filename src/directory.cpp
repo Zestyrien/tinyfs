@@ -1,4 +1,6 @@
 #include "directory.h"
+#include <cstring>
+#include <iostream>
 
 namespace tfs {
 
@@ -14,7 +16,7 @@ MakeElementFromBuffer(char *buff, size_t const &remaining) {
         buff, *((uint32_t *)(buff + 1 + name.size()))));
   }
 
-  return tfs::Error::InvalidDirectory;
+  return Maybe<DirectoryElement, tfs::Error>(tfs::Error::InvalidDirectory);
 }
 
 Directory::Directory()
@@ -32,7 +34,7 @@ Maybe<std::string_view, tfs::Error> Directory::GetDirectory() const {
     return Maybe<std::string_view, tfs::Error>(tfs::Error::InvalidDirectory);
   }
 
-  return std::string_view(&m_pBlock[0]);
+  return Maybe<std::string_view, tfs::Error>(std::string_view(&m_pBlock[0]));
 }
 
 Maybe<DirectoryElement, tfs::Error> Directory::GetParentDirectory() const {
@@ -110,8 +112,8 @@ std::optional<size_t> Directory::GetNextFile(size_t point) const {
     return std::nullopt;
   }
 
-  // Skip parent inode
-  point += 5;
+  // Skip inode
+  point += sizeof(uint32_t) + 1;
 
   if (point >= BLOCK_SIZE) {
     return std::nullopt;
@@ -120,6 +122,164 @@ std::optional<size_t> Directory::GetNextFile(size_t point) const {
   if (m_pBlock[point] != '\0') {
     return point;
   }
+
   return std::nullopt;
 }
+
+std::optional<size_t> Directory::GetDirectorySize() const {
+  size_t count = 0;
+  // Skip dir name
+  while (m_pBlock[count] != '\0') {
+    count++;
+  }
+  count++;
+
+  // Skip parent dir name
+  while (m_pBlock[count] != '\0') {
+    count++;
+  }
+  count++;
+
+  // Skip parent inode
+  count += sizeof(uint32_t);
+
+  auto file = GetNextFile(count);
+  auto const needToSkipLast = file.has_value();
+  while (file) {
+    count = file.value();
+    file = GetNextFile(count);
+  }
+
+  if (needToSkipLast) {
+    // count points to the last file.
+    // Add name and inode size.
+    while (m_pBlock[count] != '\0') {
+      count++;
+    }
+    count++;
+
+    count += sizeof(uint32_t);
+  }
+
+  count += 2; // Double \0
+
+  return count;
+}
+
+std::optional<size_t>
+Directory::FindElementByName(std::string_view nameToSearch) const {
+  auto file = GetFirstFile();
+  while (file) {
+    std::string_view name(&m_pBlock[file.value()]);
+    if (name == nameToSearch) {
+      return file.value();
+    }
+
+    file = GetNextFile(file.value());
+  }
+
+  return std::nullopt;
+}
+
+std::optional<size_t> Directory::FindElementById(uint32_t idToSearch) const {
+  auto file = GetFirstFile();
+  while (file) {
+    auto const id = ParseElement(file.value());
+    if (id.value().nodeId == idToSearch) {
+      return file.value();
+    }
+
+    file = GetNextFile(file.value());
+  }
+
+  return std::nullopt;
+}
+
+std::optional<DirectoryElement> Directory::ParseElement(size_t point) const {
+  auto nameLen = 0;
+  while (m_pBlock[point + nameLen] != '\0') {
+    nameLen++;
+  }
+  nameLen++;
+
+  if (nameLen == 0) {
+    return std::nullopt;
+  }
+
+  return DirectoryElement(&m_pBlock[point], m_pBlock[point + nameLen]);
+}
+
+void Directory::InitDirectory(std::string_view dirName,
+                              std::string_view parentDir,
+                              uint32_t const parentId) {
+  size_t count = dirName.size();
+  dirName.copy(m_pBlock.get(), count);
+  m_pBlock[count] = '\0';
+  count++;
+
+  parentDir.copy(&m_pBlock[count], parentDir.size());
+  count += parentDir.size();
+  m_pBlock[count] = '\0';
+  count++;
+
+  memcpy(&m_pBlock[count], &parentId, sizeof(uint32_t));
+  count += sizeof(uint32_t);
+  count++;
+  // Double null to terminate folder
+  m_pBlock[count] = '\0';
+  m_pBlock[count + 1] = '\0';
+}
+
+std::optional<tfs::Error>
+Directory::AddElement(DirectoryElement const &element) {
+  auto file = FindElementById(element.nodeId);
+  if (file) {
+    return tfs::Error::ElementAlreadyExists;
+  }
+
+  file = FindElementByName(element.name);
+  if (file) {
+    return tfs::Error::ElementAlreadyExists;
+  }
+
+  auto dirSize = GetDirectorySize();
+  if (!dirSize) {
+    return tfs::Error::InvalidDirectory;
+  }
+
+  auto size = dirSize.value() - 2;
+
+  element.name.copy(&m_pBlock[size], element.name.size());
+  size += element.name.size() + 1;
+  memcpy(&m_pBlock[size], &element.nodeId, sizeof(uint32_t));
+  size += sizeof(uint32_t) + 1;
+  // Double null to terminate folder
+  m_pBlock[size] = '\0';
+  m_pBlock[size + 1] = '\0';
+
+  std::cout << std::endl;
+  return std::nullopt;
+}
+
+std::optional<tfs::Error> Directory::RemoveElement(uint32_t idToRemove) {
+
+  auto const size = GetDirectorySize();
+  if (!size) {
+    return tfs::Error::InvalidDirectory;
+  }
+
+  auto const file = FindElementById(idToRemove);
+  if (!file) {
+    return tfs::Error::ElementNotFound;
+  }
+
+  // name size + \0 + 1000
+  auto const offset = strlen(&m_pBlock[file.value()]) + 1 + sizeof(uint32_t);
+  auto const remaining = size.value() - file.value() - offset;
+
+  memcpy(&m_pBlock[file.value()], &m_pBlock[file.value() + offset], remaining);
+
+  return std::nullopt;
+}
+
 } // namespace tfs

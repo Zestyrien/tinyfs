@@ -2,7 +2,6 @@
 #include "expectedBuffers.h"
 #include "tinyfs.h"
 #include <gtest/gtest.h>
-#include <string.h>
 
 bool Compare(std::array<char, BLOCK_SIZE> const &one,
              std::array<char, BLOCK_SIZE> const &two) {
@@ -32,7 +31,7 @@ TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
 
   auto result = tiny.GetDiskIO();
   std::array<char, BLOCK_SIZE> block = {0};
-  std::array<char, BLOCK_SIZE> dst;
+  std::array<char, BLOCK_SIZE> dst = {};
 
   EXPECT_FALSE(result->ReadBlock(SUPER_BLOCK, dst));
   EXPECT_TRUE(Compare(block, dst)) << "SUPER block not zero after format.";
@@ -42,7 +41,7 @@ TEST(TinyFS, WhenFormatDiskFormatsA15BlocksDisk) {
   EXPECT_TRUE(Compare(block, dst));
 
   // Set first bit to one to compare with the bitmaps
-  block[0] = 0b10000000;
+  block[0] = static_cast<char>(0b10000000);
 
   EXPECT_FALSE(result->ReadBlock(INODE_BITMAP_BLOCK, dst));
   EXPECT_TRUE(Compare(block, dst));

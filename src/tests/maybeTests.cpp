@@ -8,7 +8,7 @@ auto constexpr lawrenceLimburger = L"Couldn't defeat Limnurger...";
 
 struct ErrorTest {
   std::wstring error;
-  ErrorTest(bool e = false) {
+  explicit ErrorTest(bool e = false) {
     if (e) {
       error = lawrenceLimburger;
     }
@@ -17,7 +17,7 @@ struct ErrorTest {
 
 struct ResultTest {
   std::wstring result;
-  ResultTest(bool r = false) {
+  explicit ResultTest(bool r = false) {
     if (r) {
       result = rideFree;
     }

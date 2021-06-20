@@ -7,6 +7,9 @@ auto const outOfRange = L"Operation failed: out of range.";
 auto const partitionTooSmall = L"Operation failed: the partition is too small, "
                                L"minium size for the partition is 15 blocks.";
 auto const invalidDirectory = L"Error attempt to read an invalid directory.";
+auto const elementAlreadyExists =
+    L"Error the file or directory already present.";
+auto const elementNotFound = L"Error element not found.";
 auto const unknown = L"Unknown error";
 
 std::wstring_view tfs::GetErrorInfo(tfs::Error const &error) {
@@ -21,6 +24,10 @@ std::wstring_view tfs::GetErrorInfo(tfs::Error const &error) {
     return partitionTooSmall;
   case (tfs::Error::InvalidDirectory):
     return invalidDirectory;
+  case (tfs::Error::ElementAlreadyExists):
+    return elementAlreadyExists;
+  case (tfs::Error::ElementNotFound):
+    return elementNotFound;
   default:
     break;
   }

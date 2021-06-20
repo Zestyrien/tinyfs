@@ -19,7 +19,7 @@ std::array<char, 13> const EMPTY_MARS = {
 };
 
 // Mars
-std::array<char, 47> const MARS = {
+std::array<char, 46> const MARS = {
     'M',  'a',  'r', 's', '\0',                   // Directory name
     '/',  '\0',                                   // Parent dir name
     0,    0,    0,   0,                           // Parent dir name
@@ -29,5 +29,5 @@ std::array<char, 47> const MARS = {
     2,    0,    0,   0,                           // File inode
     'T',  'u',  'r', 'b', 'o',  '\0',             // File name
     3,    0,    0,   0,                           // File inode
-    '\0', '\0'                                    // Duble null
+    '\0', '\0'                                    // Double null
 };

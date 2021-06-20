@@ -21,8 +21,8 @@ std::optional<tfs::Error> TinyFS::FormatDisk(uint64_t block_count) {
   }
 
   // Set the first bit at zero for the inodes and dat bitmaps as they will
-  // contain the root forlder
-  block[0] = 0b10000000;
+  // contain the root folder
+  block[0] = static_cast<char>(0b10000000);
   m_diskIO->WriteBlock(INODE_BITMAP_BLOCK, block);
   m_diskIO->WriteBlock(DATA_BITMAP_BLOCK, block);
 
@@ -40,7 +40,7 @@ std::optional<tfs::Error> TinyFS::FormatDisk(uint64_t block_count) {
   m_diskIO->WriteBlock(INODES_BLOCK, inodes);
 
   return std::nullopt;
-}
+                                                                     }
 
 std::optional<tfs::Error> TinyFS::CreateFile(std::wstring_view fullName,
                                              bool directory) {
@@ -56,7 +56,7 @@ Maybe<uint64_t, tfs::Error> TinyFS::OpenFile(std::wstring_view fullName) {
   return Maybe<uint64_t, tfs::Error>(10);
 }
 
-Maybe<uint64_t, tfs::Error> TinyFS::GetFileSize(uint32_t const inodeId) {
+Maybe<uint64_t, tfs::Error> TinyFS::GetFileSize(uint32_t inodeId) {
   return Maybe<uint64_t, tfs::Error>(10);
 }
 

@@ -7,10 +7,10 @@ private:
   bool m_hasError;
 
 public:
-  Maybe(T const &result) : m_hasError(false), m_result{result} {}
-  Maybe(E const &error) : m_hasError(true), m_error{error} {}
+  explicit Maybe(T const &result) : m_hasError(false), m_result{result} {}
+  explicit Maybe(E const &error) : m_hasError(true), m_error{error} {}
 
-  bool error() const { return m_hasError; }
+  [[nodiscard]] bool error() const { return m_hasError; }
   T getResult() const { return m_result; }
   E getError() const { return m_error; }
 };

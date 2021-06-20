@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "error.h"
+#include "../error.h"
 
 TEST(tfsError, GetErrorInfo_WhenThereIsNotEnoughSpace) {
   EXPECT_EQ(L"Operation failed: not enough space on the disk.",
@@ -27,6 +27,16 @@ TEST(tfsError, GetErrorInfo_WhenThePartitionIsTooSmall) {
 TEST(tfsError, GetErrorInfo_WhenTheDirectoryIsInvalid) {
   EXPECT_EQ(L"Error attempt to read an invalid directory.",
             GetErrorInfo(tfs::Error::InvalidDirectory));
+}
+
+TEST(tfsError, GetErrorInfo_WhenTheElementIsAlreadyPresent) {
+  EXPECT_EQ(L"Error the file or directory already present.",
+            GetErrorInfo(tfs::Error::ElementAlreadyExists));
+}
+
+TEST(tfsError, GetErrorInfo_WhenTheElementIsNotPresent) {
+  EXPECT_EQ(L"Error element not found.",
+            GetErrorInfo(tfs::Error::ElementNotFound));
 }
 
 TEST(tfsError, GetErrorInfo_WhenTheErrorIsUnknown) {

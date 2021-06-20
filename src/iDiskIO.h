@@ -5,9 +5,9 @@
 
 class IDiskIO {
 public:
-  virtual ~IDiskIO(){};
+  virtual ~IDiskIO() = default;
   virtual std::optional<tfs::Error>
-  ReadBlock(uint32_t const block, std::array<char, BLOCK_SIZE> &dst) = 0;
+  ReadBlock(uint32_t block, std::array<char, BLOCK_SIZE> &dst) = 0;
   virtual std::optional<tfs::Error>
-  WriteBlock(uint32_t const block, std::array<char, BLOCK_SIZE> const &src) = 0;
+  WriteBlock(uint32_t block, std::array<char, BLOCK_SIZE> const &src) = 0;
 };

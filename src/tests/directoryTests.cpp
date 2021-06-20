@@ -60,7 +60,7 @@ TEST(tfsDirectory, GetFileList_WhenTheDirectoryIsEmpty) {
 
   auto fileList = dir.GetFileList();
   EXPECT_FALSE(fileList.error());
-  EXPECT_TRUE(fileList.getResult().size() == 0);
+  EXPECT_TRUE(fileList.getResult().empty());
 }
 
 TEST(tfsDirectory, GetFileList_WhenTheDirectoryIsNotEmpty) {
@@ -111,4 +111,145 @@ TEST(tfsDirectory, GetBuffer_WhenTheBufferRetreivedTwice) {
   auto bufferTwo = dir.GetBuffer();
   EXPECT_TRUE(bufferOne);
   EXPECT_FALSE(bufferTwo);
+}
+
+TEST(tfsDirectory, InitDirectory) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement const parentEl("Uther", 1);
+  dir.InitDirectory("Arthur", parentEl.name, parentEl.nodeId);
+  auto dirName = dir.GetDirectory();
+  EXPECT_FALSE(dirName.error());
+  if (!dirName.error()) {
+    EXPECT_EQ(dirName.getResult(), "Arthur");
+  }
+
+  auto parent = dir.GetParentDirectory();
+  EXPECT_FALSE(parent.error());
+  if (!parent.error()) {
+    EXPECT_EQ(parent.getResult(), parentEl);
+  }
+  auto files = dir.GetFileList();
+  EXPECT_FALSE(files.error());
+  if (!files.error()) {
+    EXPECT_TRUE(files.getResult().empty());
+  }
+}
+
+TEST(tfsDirectory,
+     AddElement_WhenTheElementDoesNotExistAndTheDirectoryIsEmpty) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), EMPTY_MARS.data(), EMPTY_MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement el("Sterzo", 1);
+  auto result = dir.AddElement(el);
+  EXPECT_FALSE(result);
+
+  auto files = dir.GetFileList();
+  if (!files.error()) {
+    EXPECT_EQ(files.getResult().size(), 1);
+    for (auto const &file : files.getResult()) {
+      EXPECT_EQ(file, el);
+    }
+  } else {
+    EXPECT_TRUE(false);
+  }
+}
+
+TEST(tfsDirectory, GetDirectorySize_WhenDirectoryIsEmpty) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), EMPTY_MARS.data(), EMPTY_MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  auto result = dir.GetDirectorySize();
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(result.value(), EMPTY_MARS.size());
+}
+
+TEST(tfsDirectory, GetDirectorySize_WhenDirectoryIsNotEmpty) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), MARS.data(), MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  auto result = dir.GetDirectorySize();
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(result.value(), MARS.size());
+}
+
+TEST(tfsDirectory,
+     AddElement_WhenTheElementDoesNotExistAndDirectoryIsNotEmpty) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), MARS.data(), MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement el("Carolina", 4);
+  auto result = dir.AddElement(el);
+  EXPECT_FALSE(result);
+
+  std::array<tfs::DirectoryElement, 4> expected = {
+      tfs::DirectoryElement("Sterzo", 1),
+      tfs::DirectoryElement("Pistone", 2),
+      tfs::DirectoryElement("Turbo", 3),
+      tfs::DirectoryElement("Carolina", 4),
+  };
+
+  auto files = dir.GetFileList();
+  if (!files.error()) {
+    auto const resultFiles = files.getResult();
+    EXPECT_EQ(resultFiles.size(), expected.size());
+    for (size_t i = 0; i < resultFiles.size() && i < expected.size(); i++) {
+      EXPECT_TRUE(expected.at(i) == resultFiles.at(i))
+          << "Error on element: " << i;
+    }
+  } else {
+    EXPECT_TRUE(false);
+  }
+}
+
+TEST(tfsDirectory, AddElement_WhenTheElementExists) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), MARS.data(), MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement el("Sterzo", 1);
+  dir.AddElement(el);
+  auto result = dir.AddElement(el);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), tfs::Error::ElementAlreadyExists);
+}
+
+TEST(tfsDirectory, RemoveElement_WhenTheElementDoesNotExist) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), EMPTY_MARS.data(), EMPTY_MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement el("Sterzo", 1);
+  auto result = dir.RemoveElement(el.nodeId);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(result.value(), tfs::Error::ElementNotFound);
+}
+
+TEST(tfsDirectory, RemoveElement_WhenTheElementExists) {
+  std::unique_ptr<char[]> pBlock(new char[BLOCK_SIZE]);
+  memcpy(pBlock.get(), MARS.data(), MARS.size());
+  auto dir = tfs::Directory(std::move(pBlock));
+
+  tfs::DirectoryElement el("Sterzo", 1);
+  auto result = dir.RemoveElement(el.nodeId);
+  EXPECT_FALSE(result);
+
+  auto files = dir.GetFileList();
+  if (!files.error()) {
+    auto const returnedFiles = files.getResult();
+    EXPECT_EQ(returnedFiles.size(), 2);
+    for (auto const &file : returnedFiles) {
+      EXPECT_NE(file, el);
+    }
+  } else {
+    EXPECT_TRUE(false);
+  }
 }

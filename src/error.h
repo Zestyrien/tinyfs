@@ -8,7 +8,9 @@ enum class Error {
   DiskInterfaceNotProvided,
   OutOfRange,
   PartitionTooSmall,
-  InvalidDirectory
+  InvalidDirectory,
+  ElementAlreadyExists,
+  ElementNotFound
 };
 
 std::wstring_view GetErrorInfo(Error const &error);

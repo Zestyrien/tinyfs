@@ -4,14 +4,12 @@
 
 #include "diskMock.h"
 
-DiskMock::DiskMock(uint64_t const blocksCount) {
+DiskMock::DiskMock(uint64_t blocksCount) {
   m_disk.resize(blocksCount * BLOCK_SIZE);
 }
 
-DiskMock::~DiskMock() {}
-
 std::optional<tfs::Error>
-DiskMock::ReadBlock(uint32_t const block, std::array<char, BLOCK_SIZE> &dst) {
+DiskMock::ReadBlock(uint32_t block, std::array<char, BLOCK_SIZE> &dst) {
   if (m_disk.size() / BLOCK_SIZE <= block) {
     return tfs::Error::OutOfRange;
   }
@@ -24,8 +22,7 @@ DiskMock::ReadBlock(uint32_t const block, std::array<char, BLOCK_SIZE> &dst) {
 }
 
 std::optional<tfs::Error>
-DiskMock::WriteBlock(uint32_t const block,
-                     std::array<char, BLOCK_SIZE> const &src) {
+DiskMock::WriteBlock(uint32_t block, std::array<char, BLOCK_SIZE> const &src) {
   if (m_disk.size() / BLOCK_SIZE <= block) {
     return tfs::Error::OutOfRange;
   }
